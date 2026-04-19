@@ -198,84 +198,102 @@ void handleKeypadAlarm(char key)
 
 {
 
-    // Only process keypad if the alarm is actually active
-
-    if (!alarmState) {
+    if (key == '\0') {
 
         return;
 
     }
 
-    if (key != '\0') {
+    // When alarm is OFF, # shows recent events
 
-        // 1. Handle Digit Input (0-9)
+    if (!alarmState) {
 
-        if (key >= '0' && key <= '9') {
+        if (key == '#') {
 
-            if (keyCount < NUMBER_OF_KEYS) {
+            uartUsb.write("\r\n--- RECENT EVENTS ---\r\n\r\n", 26);
 
-                enteredCode[keyCount] = key;
+            for (int i = 0; i < EVENT_MAX_STORAGE; i++) {
 
-                keyCount++;
+                if (arrayOfStoredEvents[i].seconds != 0) {
 
-                // Visual feedback on Serial Monitor
+                    char str[100];
 
-                char str[20];
+                    sprintf(str, "Event: %s | Time: %s",
 
-                sprintf(str, "Key pressed: %c\r\n", key);
+                            arrayOfStoredEvents[i].typeOfEvent,
 
-                uartUsb.write(str, strlen(str));
+                            ctime(&arrayOfStoredEvents[i].seconds));
+                            
+                    uartUsb.write(str, strlen(str));
+
+                }
 
             }
 
         }
 
-        // 2. Handle Enter (#)
+        return;
 
-        else if (key == '#') {
+    }
 
-            bool isCorrect = true;
+    // Alarm is ON — handle code entry
 
-            // Check if 4 digits were entered
+    if (key >= '0' && key <= '9') {
 
-            if (keyCount == NUMBER_OF_KEYS) {
+        if (keyCount < NUMBER_OF_KEYS) {
 
-                for (int i = 0; i < NUMBER_OF_KEYS; i++) {
+            enteredCode[keyCount] = key;
 
-                    if (enteredCode[i] != codeSequence[i]) {
+            keyCount++;
 
-                        isCorrect = false;
+            char str[20];
 
-                    }
+            sprintf(str, "Key pressed: %c\r\n", key);
 
-                }
-
-                if (isCorrect) {
-
-                    uartUsb.write("Code Correct. Alarm Deactivated.\r\n", 34);
-
-                    alarmState = false;
-
-                } else {
-
-                    uartUsb.write("Incorrect Code. Try again.\r\n", 28);
-
-                }
-
-            } else {
-
-                uartUsb.write("Please enter 4 digits first.\r\n", 30);
-
-            }
-
-            // Reset buffer for next attempt
-
-            keyCount = 0;
+            uartUsb.write(str, strlen(str));
 
         }
 
     }
 
+    else if (key == '#') {
+
+        bool isCorrect = true;
+
+        if (keyCount == NUMBER_OF_KEYS) {
+
+            for (int i = 0; i < NUMBER_OF_KEYS; i++) {
+
+                if (enteredCode[i] != codeSequence[i]) {
+
+                    isCorrect = false;
+
+                }
+
+            }
+
+            if (isCorrect) {
+
+                uartUsb.write("Code Correct. Alarm Deactivated.\r\n", 34);
+
+                alarmState = false;
+
+            } else {
+
+                uartUsb.write("Incorrect Code. Try again.\r\n", 28);
+
+            }
+
+        } else {
+
+            uartUsb.write("Please enter 4 digits first.\r\n", 30);
+
+        }
+
+        keyCount = 0;
+
+    }
+    
 }
 
 void updateAlarm()
