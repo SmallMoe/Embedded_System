@@ -330,7 +330,7 @@ void updateThreshold()
 
     float potValue = pot.read();
 
-    tempThreshold = 30.0f + floor(potValue * 12.0f);
+    tempThreshold = 25.0f + floor(potValue * 17.0f);
 
     // 2. Only print if the value has changed by more than 0.1 degrees
 
