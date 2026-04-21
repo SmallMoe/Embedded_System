@@ -39,7 +39,7 @@ void activateAlarm();
 void deactivateAlarm();
 float analogReadingScaledWithTheLM35Formula(float analogReading);
 
-//=====[Main]==================================================================
+//Main
 int main()
 {
     displayInit(DISPLAY_CONNECTION_I2C_PCF8574_IO_EXPANDER);
@@ -144,8 +144,7 @@ void deactivateAlarm()
     displayStringWrite("                  ");
 }
 
-//=====[Code Entry]============================================================
-
+//Code Entry
 void showCodePrompt()
 {
     char displayBuf[21];
